@@ -9,6 +9,16 @@
 
 Userspace 80% charge cap for POCO X3 Pro (vayu). No kernel source needed, no app needed, no settings to flip.
 
+## Tested on
+
+- **Device:** POCO X3 Pro (M2102J20SG, codename vayu)
+- **SoC:** Qualcomm Snapdragon 860 (SM8150, msmnile platform - read from the
+  phone itself, not a spec sheet)
+- **ROM:** MIUI 14.0.15.0.TNRCNXM (China ROM), Android 13
+- **Kernel:** RE404 vR3 by deutereum (`4.19.404R`, Neutron Clang 24,
+  EEVDF/BPF backports, KowSU) - its advertised Bypass Charging was verified
+  by direct sysfs test on this exact setup
+
 ## Why
 
 Stock Battery protection cannot be trusted to hold 80%: on this phone it
