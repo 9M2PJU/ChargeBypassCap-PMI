@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.jpg" alt="ChargeBypassCap PMI logo" width="360">
+</p>
+
 # ChargeBypassCap PMI
 
 [![Release](https://img.shields.io/github/v/release/9M2PJU/ChargeBypassCap-PMI?style=flat-square)](https://github.com/9M2PJU/ChargeBypassCap-PMI/releases)
