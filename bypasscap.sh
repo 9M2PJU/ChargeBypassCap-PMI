@@ -49,7 +49,7 @@ WEBROOT=$SCRIPTDIR/webroot
 TEMPLATE=$WEBROOT/template.html
 PAGE=$WEBROOT/index.html
 LASTPAGE=$MODDIR/last_page
-BASE_DESC="80% cap for Sakata kernel via bypass node. Action button = full charge / resume cap."
+BASE_DESC="80% cap via kernel bypass. Action button = full charge / resume cap."
 LAST_STATUS=$MODDIR/last_status
 
 update_desc() {
