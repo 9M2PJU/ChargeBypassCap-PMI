@@ -11,8 +11,6 @@
 
 [![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://buymeacoffee.com/9m2pju)
 
-**Automatically stops charging at 80% so your battery lasts longer.**
-
 Userspace 80% charge cap for POCO X3 Pro (vayu). No kernel source needed, no app needed, no settings to flip.
 
 ## Tested on

@@ -2,7 +2,7 @@
 schemaVersion: 1
 id: chargebypasscap-pmi
 name: ChargeBypassCap PMI - 80% charge cap
-summary: Automatically stops charging at 80% so your battery lasts longer.
+summary: Userspace 80% charge cap for POCO X3 Pro via input_suspend.
 description: README.md
 license: GPL-3.0-only
 homepage: https://github.com/9M2PJU/ChargeBypassCap-PMI
