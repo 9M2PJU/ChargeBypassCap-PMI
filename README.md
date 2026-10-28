@@ -147,6 +147,21 @@ Verdict: healthy. One resident process, bounded writes (one sysfs node
 plus its own state dir), fails safe (a kernel that ignores the node lands
 in override, never in a bootloop), clean uninstall.
 
+### Resource usage (measured 2026-10-29, unplugged)
+
+- Memory: one process, VmRSS 1776 KB (~1.7 MB), alive across 10 h
+  uptime including sleep/wake. State dir 6 KB total (`cap.log` 202 B,
+  capped at 200 lines).
+- CPU: same loop as the sibling module (same poll interval, same ~6
+  helper forks per poll: `cat` x3, `rm`, `grep`+`sed`). The sibling
+  measured 0.14 s over 80.6 s (about 0.1 s per 60 s poll, 0.17% of one
+  core); this module is identical by construction and is expected to
+  match. A dedicated live sample will be added on next contact (the
+  phone was asleep when this was written).
+- Sleep state: `sleep 60` between polls. Holds no wakelocks, registers
+  no alarms, writes nothing while unplugged.
+- Bottom line: below anything the battery stats can attribute.
+
 ## Files
 
 - `service.sh` - started by KernelSU on boot, launches the daemon detached.
