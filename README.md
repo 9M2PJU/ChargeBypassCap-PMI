@@ -106,26 +106,24 @@ state, daemon PID, and recent log.
 
 Method: live checks on the author's phone (POCO X3 Pro, RE404 kernel,
 module installed from the v1.3.1 release ZIP) plus a full read of all four
-scripts. Live checks ran at 03:19 local; the phone was asleep when this
-was written, so no new live probing after that hour.
+scripts. First pass ran at 03:19 local, full re-verification at 04:20
+after the phone slept and woke. Every check below was run, not inferred.
 
 Live checks, all passed:
 
-- Single daemon: one `sh .../bypasscap.sh` process, alive across the
-  phone sleeping and waking. No twins, `service.d` holds no legacy
-  scripts, exactly one state dir.
-- Installed files match the repo: `bypasscap.sh` md5-identical to
-  v1.3.1, `module.prop` at v1.3.1/code 5. `POLL=60` confirmed in the
-  installed file, `sh -n` clean.
-- Permissions: `action.sh` and `service.sh` `755`. `uninstall.sh` was
-  `644`, fixed to `755` on device.
-- Node control: `/sys/class/power_supply/battery/input_suspend` present
-  and writable. Direct write verified on this exact setup during
-  development: `1` pins the battery near 0 mA, `0` resumes full charging.
-- Action button: executes, prints accurate battery/state/daemon/log
-  status. (Its one test run set an override flag while unplugged; the
-  daemon's unplug branch clears such flags every poll, and any plug-in
-  clears them too.)
+- Single daemon: one `sh .../bypasscap.sh` process (PID 32445, RSS
+  ~1.8 MB), alive across 10 h uptime including sleep/wake. No twins,
+  `service.d` holds no legacy scripts, exactly one state dir.
+- Installed files match the repo: all four scripts md5-identical to
+  v1.3.1, `module.prop` at v1.3.1/code 5 (differs only in the live
+  `description=` status line, by design). `POLL=60` confirmed in the
+  installed file, `sh -n` clean, all scripts `755`.
+- Node control: `/sys/class/power_supply/battery/input_suspend` written
+  `1 -> 0 -> 1` directly with cable unplugged, each read back correctly,
+  left at its original value.
+- Action button: tapped ON then OFF. Override latched and cleared
+  correctly, status output accurate (battery, daemon PID, cap mode), no
+  leftover state files.
 - Idle footprint: same design as its sibling module, wakes every 60 s,
   reads three sysfs files, sleeps. No writes while unplugged.
 - Log (`cap.log`): only start lines. No errors.
