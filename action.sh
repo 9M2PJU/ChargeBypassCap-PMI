@@ -2,7 +2,7 @@
 # KernelSU action button: toggle full-charge override + status readout.
 # Tap once   -> override till unplug: bypass OFF, charges to 100%.
 # Tap again  -> override cleared: 80% cap resumes within ~30s.
-STATEDIR=/data/adb/chargebypasscap-re404
+STATEDIR=/data/adb/chargebypasscap-pmi
 LOG=$STATEDIR/cap.log
 HOLDING=$STATEDIR/holding
 OVERRIDE=$STATEDIR/override
@@ -15,7 +15,7 @@ USBON=/sys/class/power_supply/usb/online
 cap=$(cat $CAPF 2>/dev/null)
 cur=$(cat $CURF 2>/dev/null)
 usb=$(cat $USBON 2>/dev/null)
-pid=$(pgrep -f "modules/chargebypasscap-re404/bypasscap" 2>/dev/null | head -n 1)
+pid=$(pgrep -f "modules/chargebypasscap-pmi/bypasscap" 2>/dev/null | head -n 1)
 
 if [ -f $OVERRIDE ]; then
   rm -f $OVERRIDE

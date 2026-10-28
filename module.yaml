@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/KernelSU-Modules/tools/main/schemas/module.schema.json
 schemaVersion: 1
-id: chargebypasscap-re404
-name: ChargeBypassCap RE404 - 80% charge cap
+id: chargebypasscap-pmi
+name: ChargeBypassCap PMI - 80% charge cap
 summary: Userspace 80% charge cap for POCO X3 Pro via input_suspend.
 description: README.md
 license: GPL-3.0-only
-homepage: https://github.com/9M2PJU/ChargeBypassCap-RE404
-support: https://github.com/9M2PJU/ChargeBypassCap-RE404/issues
+homepage: https://github.com/9M2PJU/ChargeBypassCap-PMI
+support: https://github.com/9M2PJU/ChargeBypassCap-PMI/issues
 tags: [battery, charging]
 authors:
   - name: 9M2PJU

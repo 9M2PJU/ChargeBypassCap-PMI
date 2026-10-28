@@ -1,8 +1,8 @@
-id=chargebypasscap-re404
-name=ChargeBypassCap RE404 - 80% charge cap
-version=v1.1
-versionCode=2
+id=chargebypasscap-pmi
+name=ChargeBypassCap PMI - 80% charge cap
+version=v1.2
+versionCode=3
 author=9M2PJU
 description=80% cap for POCO X3 Pro via input_suspend. Action button = full charge / resume cap.
-support=https://github.com/9M2PJU/ChargeBypassCap-RE404/issues
+support=https://github.com/9M2PJU/ChargeBypassCap-PMI/issues
 donate=https://buymeacoffee.com/9m2pju
