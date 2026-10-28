@@ -102,6 +102,53 @@ state, daemon PID, and recent log.
   daemon leaves manually-suspended states alone, so the two do not fight).
 - Wired charging only (the wireless path is untested).
 
+## Audit report (2026-10-29, v1.3.1 on POCO X3 Pro)
+
+Method: live checks on the author's phone (POCO X3 Pro, RE404 kernel,
+module installed from the v1.3.1 release ZIP) plus a full read of all four
+scripts. Live checks ran at 03:19 local; the phone was asleep when this
+was written, so no new live probing after that hour.
+
+Live checks, all passed:
+
+- Single daemon: one `sh .../bypasscap.sh` process, alive across the
+  phone sleeping and waking. No twins, `service.d` holds no legacy
+  scripts, exactly one state dir.
+- Installed files match the repo: `bypasscap.sh` md5-identical to
+  v1.3.1, `module.prop` at v1.3.1/code 5. `POLL=60` confirmed in the
+  installed file, `sh -n` clean.
+- Permissions: `action.sh` and `service.sh` `755`. `uninstall.sh` was
+  `644`, fixed to `755` on device.
+- Node control: `/sys/class/power_supply/battery/input_suspend` present
+  and writable. Direct write verified on this exact setup during
+  development: `1` pins the battery near 0 mA, `0` resumes full charging.
+- Action button: executes, prints accurate battery/state/daemon/log
+  status. (Its one test run set an override flag while unplugged; the
+  daemon's unplug branch clears such flags every poll, and any plug-in
+  clears them too.)
+- Idle footprint: same design as its sibling module, wakes every 60 s,
+  reads three sysfs files, sleeps. No writes while unplugged.
+- Log (`cap.log`): only start lines. No errors.
+- `uninstall.sh`: kills the daemon by its exact module path and removes
+  only `/data/adb/chargebypasscap-pmi`. Verified by reading, not
+  executed.
+
+Bugs found and fixed during this audit:
+
+- `uninstall.sh` shipped `644` (the manager's exec-bit handling proved
+  inconsistent across installs). Fixed on device, then fixed in git:
+  all scripts are `755` from v1.3.1 on.
+
+Minor nits (cosmetic, no behavior change, left as-is):
+
+- The normal-start log line still says `override via manual tile tap`,
+  wording from the tile era. Control has been direct node writes since
+  the PMI rewrite.
+
+Verdict: healthy. One resident process, bounded writes (one sysfs node
+plus its own state dir), fails safe (a kernel that ignores the node lands
+in override, never in a bootloop), clean uninstall.
+
 ## Files
 
 - `service.sh` - started by KernelSU on boot, launches the daemon detached.
