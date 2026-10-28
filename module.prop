@@ -1,8 +1,8 @@
-id=chargebypasscap-vayu
-name=ChargeBypassCap Vayu - 80% charge cap
-version=v1.0
-versionCode=1
+id=chargebypasscap-re404
+name=ChargeBypassCap RE404 - 80% charge cap
+version=v1.1
+versionCode=2
 author=9M2PJU
 description=80% cap for POCO X3 Pro via input_suspend. Action button = full charge / resume cap.
-support=https://github.com/9M2PJU/ChargeBypassCap-Vayu/issues
+support=https://github.com/9M2PJU/ChargeBypassCap-RE404/issues
 donate=https://buymeacoffee.com/9m2pju

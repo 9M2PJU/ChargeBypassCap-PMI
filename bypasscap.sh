@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# chargebypasscap-vayu - userspace 80% charge cap for POCO X3 Pro (vayu).
+# chargebypasscap-re404 - userspace 80% charge cap for POCO X3 Pro (vayu).
 # Direct sysfs control via the standard PMI node:
 #   /sys/class/power_supply/battery/input_suspend (1 = suspend, 0 = resume)
 # Verified on RE404 kernel: 1 pins battery at ~0 mA, 0 resumes full charging.
@@ -18,7 +18,7 @@
 # Requirements: root + a kernel that honors input_suspend (RE404 verified).
 # Runs as root from the KernelSU module service.sh at boot.
 
-MODDIR=/data/adb/chargebypasscap-vayu
+MODDIR=/data/adb/chargebypasscap-re404
 LOG=$MODDIR/cap.log
 HOLDING=$MODDIR/holding
 OVERRIDE=$MODDIR/override

@@ -1,9 +1,9 @@
-# ChargeBypassCap Vayu
+# ChargeBypassCap RE404
 
-[![Release](https://img.shields.io/github/v/release/9M2PJU/ChargeBypassCap-Vayu?style=flat-square)](https://github.com/9M2PJU/ChargeBypassCap-Vayu/releases)
+[![Release](https://img.shields.io/github/v/release/9M2PJU/ChargeBypassCap-RE404?style=flat-square)](https://github.com/9M2PJU/ChargeBypassCap-RE404/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square)](LICENSE)
 [![KernelSU](https://img.shields.io/badge/KernelSU-module-green?style=flat-square)](https://kernelsu.org)
-[![Platform](https://img.shields.io/badge/platform-Android-lightgrey?style=flat-square)](https://github.com/9M2PJU/ChargeBypassCap-Vayu)
+[![Platform](https://img.shields.io/badge/platform-Android-lightgrey?style=flat-square)](https://github.com/9M2PJU/ChargeBypassCap-RE404)
 
 [![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://buymeacoffee.com/9m2pju)
 
@@ -57,13 +57,13 @@ rewritten by the daemon every poll:
 
 **KernelSU manager (recommended):**
 Modules > Install from storage > pick the release ZIP from the
-[releases page](https://github.com/9M2PJU/ChargeBypassCap-Vayu/releases). Reboot.
+[releases page](https://github.com/9M2PJU/ChargeBypassCap-RE404/releases). Reboot.
 
 **Manual (adb, root):**
-copy this repository's files to `/data/adb/modules/chargebypasscap-vayu/`,
+copy this repository's files to `/data/adb/modules/chargebypasscap-re404/`,
 `chmod 755 service.sh bypasscap.sh action.sh uninstall.sh`, reboot.
 
-Verify: `su -c 'tail /data/adb/chargebypasscap-vayu/cap.log'` should show the
+Verify: `su -c 'tail /data/adb/chargebypasscap-re404/cap.log'` should show the
 daemon starting, and the module description shows live status.
 
 ## Usage
@@ -100,8 +100,8 @@ state, daemon PID, and recent log.
 
 ## Logging
 
-- State dir: `/data/adb/chargebypasscap-vayu/` (holding, override, last_status, cap.log)
-- Log: `/data/adb/chargebypasscap-vayu/cap.log` - check what it did overnight.
+- State dir: `/data/adb/chargebypasscap-re404/` (holding, override, last_status, cap.log)
+- Log: `/data/adb/chargebypasscap-re404/cap.log` - check what it did overnight.
 
 ## Credits
 
