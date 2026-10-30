@@ -1,7 +1,7 @@
 id=chargebypasscap-pmi
 name=ChargeBypassCap PMI
-version=v1.4
-versionCode=6
+version=v1.5
+versionCode=7
 author=9M2PJU
 description=[🔋 charging] 80% cap via input_suspend. Open=set cap, Action=full charge.
 support=https://github.com/9M2PJU/ChargeBypassCap-PMI/issues

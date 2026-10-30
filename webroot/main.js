@@ -4,8 +4,8 @@
   var CAPF="/sys/class/power_supply/battery/capacity";
   var CURF="/sys/class/power_supply/battery/current_now";
   var USBON="/sys/class/power_supply/usb/online";
-  var HOLDING="/data/adb/chargebypasscap/holding";
-  var OVERRIDE="/data/adb/chargebypasscap/override";
+  var HOLDING="/data/adb/chargebypasscap-pmi/holding";
+  var OVERRIDE="/data/adb/chargebypasscap-pmi/override";
 
   function $(id){ return document.getElementById(id); }
   var slider=$("capSlider"), capVal=$("capVal"), resumeHint=$("resumeHint"),
