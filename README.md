@@ -11,9 +11,9 @@
 
 [![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://buymeacoffee.com/9m2pju)
 
-Userspace adjustable charge cap for POCO X3 Pro (vayu). No kernel source needed, no app needed — set the cap in the module WebUI (Open button).
+Userspace adjustable charge cap for POCO X3 Pro (vayu). No kernel source needed, no app needed - set the cap in the module WebUI (Open button).
 
-> **Two variants exist — pick yours:** this repo is for **POCO X3 Pro (vayu)** on RE404 (drives `input_suspend`). For **POCO F7 (onyx)** on Sakata(X) kernels (drives `smart_night`), use [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap). Same daemon logic, different node.
+> **Two variants exist - pick yours:** this repo is for **POCO X3 Pro (vayu)** on RE404 (drives `input_suspend`). For **POCO F7 (onyx)** on Sakata(X) kernels (drives `smart_night`), use [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap). Same daemon logic, different node.
 
 ## Tested on
 
@@ -40,7 +40,8 @@ The kernel exposes bypass control through the standard power_supply node:
 - Write `1`: input suspended, battery current drops to ~0 mA, phone runs
   off the cable. Write `0`: charging resumes.
 - Verified by direct test on RE404: `1` gave 2 mA + `Not charging`,
-  `0` ramped back to full -1.57A charging.
+  `0` ramped back to full -1.57A charging. (On the 5V path - pump fast
+  charging bypasses this node; see the audit report.)
 
 A small root daemon (`bypasscap.sh`, started at boot by `service.sh`)
 polls the battery every 60 seconds while the cable is plugged in
@@ -64,7 +65,7 @@ The daemon used to trust a stale hold across reboots: a reboot resets
 `input_suspend` to 0, and the resumed charge current then looked like a
 manual release, latching override and charging past the cap (caught on
 the sister onyx build: reboot at 02:00 with cable in, 81% to 100% by
-02:35 — same daemon logic). The fix: hammer the write until it reads
+02:35 - same daemon logic). The fix: hammer the write until it reads
 back stuck (5-minute grace, because the daemon starts before the
 charger stack is up), and re-assert any node clear within 10 minutes of
 start instead of yielding. Verified on this phone: reboot with cable in
@@ -75,13 +76,13 @@ overrides.
 
 | ROM mode | With this module |
 | --- | --- |
-| Charge fully | Use this. The module is the sole decider. |
+| Both MIUI toggles off | Use this. The module is the sole decider. |
 | Stock limiter (any cap/hold mode) | Do not trust it. On this phone stock protection blew past 80% to 84% at full current. A limiter that cannot hold its own cap cannot cooperate with the module. |
 | Intelligent / smart top-up | Not recommended. A top-up resume while the module holds reads as a manual release and latches override till unplug (only re-asserted within 10 min of boot). |
 
 None of these matter while the phone is powered off. Offline charging
 goes to 100% no matter what, so unplug before a scheduled shutdown if
-you want to wake at the cap. Recommended setup: ROM on Charge fully,
+you want to wake at the cap. Recommended setup: both MIUI toggles off,
 module cap at 80%, cable out overnight.
 
 ### MIUI toggles in detail (verified on this phone)
@@ -91,11 +92,11 @@ in the `com.miui.securitycenter` prefs:
 
 | Toggle | Behavior | With this module |
 | --- | --- | --- |
-| Battery protection (`cb_always_charge_protect`) | MIUI's own ~80% cap, documented leaky: blew past 80% to 84% at full current on this phone | Redundant at best. The module holds 80% first so stock stays idle — but it leaves a second unobservable voter on the same charger. Turn off. |
+| Battery protection (`cb_always_charge_protect`) | MIUI's own ~80% cap, documented leaky: blew past 80% to 84% at full current on this phone | Redundant at best. The module holds 80% first so stock stays idle - but it leaves a second unobservable voter on the same charger. Turn off. |
 | Smart charging (`cb_intellect_charge_protect`) | Night top-up learner: holds ~80%, resumes to 100% before wake | Defeats the cap. Its top-up resume reads to the module as a manual release, latching override till unplug (only re-asserted within 10 min of boot), so the phone finishes to 100%. Turn off. |
 
 Overnight telltale if you keep smart charging on anyway: check the
-module description in the KernelSU manager before unplugging in the
+module description in the KowSU manager before unplugging in the
 morning. `🔓 override` means the top-up disarmed the module overnight;
 `⛔ holding` means the cap survived. The daemon log timestamps exactly
 when it happened.
@@ -103,7 +104,7 @@ when it happened.
 ## Safety
 
 The module only votes suspend/resume through the standard QTI PMI
-property `input_suspend` — the same node kernel-manager apps drive,
+property `input_suspend` - the same node kernel-manager apps drive,
 same values. It has no path to voltage or current: float voltage,
 charge current, JEITA temperature derating, and OVP/OCP/thermal
 shutdown stay enforced by the PMIC hardware and lower driver layers no
@@ -112,11 +113,11 @@ module is not possible. Every stuck state is safe: node stuck at 1 =
 phone runs off the cable (a designed mode); stuck at 0 = ordinary
 charging; daemon crash = the node just stays put. Sysfs is written only
 on state transitions (60s polls, 2% engage/release gap, bounded boot
-hammer), a few transitions a day — no relay-chatter on the FETs.
+hammer), a few transitions a day - no relay-chatter on the FETs.
 Measured on the author's phone: battery health Good, 32.7C, no charger
 fault events in the kernel log. Every bug found so far produced
 overcharge to 100% (a longevity nit), never an unsafe electrical state.
-One caveat: after a kernel update, glance at the log once — a kernel
+One caveat: after a kernel update, glance at the log once - a kernel
 that ignores the node would silently neuter the cap, not damage
 anything.
 
@@ -135,7 +136,7 @@ rewritten by the daemon every poll:
 
 ## Installation
 
-**KernelSU manager (recommended):**
+**KowSU manager (recommended):**
 Modules > Install from storage > pick the release ZIP from the
 [releases page](https://github.com/9M2PJU/ChargeBypassCap-PMI/releases). Reboot.
 
@@ -149,19 +150,19 @@ daemon starting, and the module description shows live status.
 ## Usage
 
 **Set your cap:** tap the module **Open** button. A settings page shows live
-status plus a slider (50–100%, default 80): pick when bypass triggers on,
+status plus a slider (50-100%, default 80): pick when bypass triggers on,
 tap Save. Charging resumes 2% below the cap. No reboot needed.
 
 Do nothing day to day: plug in, it caps at your setting.
 
 **Travel-day full charge:** tap the module **action button** once. It
 releases bypass and latches override till unplug. Tap it again to resume the
-cap (it re-holds within ~60s if at cap+ and charging). The button also prints battery
-state, daemon PID, and recent log.
+cap (it re-holds within ~60s if at cap+ and charging). The button also prints
+battery state, daemon PID, and recent log.
 
 ## Requirements
 
-- Root with boot-script support (KernelSU tested; Magisk/APatch should work
+- Root with boot-script support (KowSU tested; Magisk/APatch should work
   since `service.sh` is a plain boot script).
 - A kernel that honors `input_suspend` (RE404 verified by direct write test;
   stock PMI stack usually works too). Without it, the daemon writes into the
@@ -211,7 +212,8 @@ Minor nits (cosmetic, no behavior change, left as-is):
 
 - The normal-start log line still says `override via manual tile tap`,
   wording from the tile era. Control has been direct node writes since
-  the PMI rewrite.
+  the PMI rewrite. (Update 2026-11-04: the line now reads `override via
+  action button` - fixed at some point since, nit closed.)
 
 Verdict: healthy. One resident process, bounded writes (one sysfs node
 plus its own state dir), fails safe (a kernel that ignores the node lands
@@ -256,14 +258,14 @@ No code changes needed.
   Re-verified on 5V DCP right after: hold at 3 mA. Use a 5V source
   when the cap matters. Related: a very weak source (100 mA
   negotiated) never reaches the -500000 engage threshold, so the
-  daemon correctly stays silent in deadband — file that under
+  daemon correctly stays silent in deadband - file that under
   charger, not module.
 - **Manager on this phone:** KowSU (F7 uses KernelSU-Next). WebUI and
   action button behave the same through `ksu.exec`.
 
 ## Files
 
-- `service.sh` - started by KernelSU on boot, launches the daemon detached.
+- `service.sh` - started by KowSU/KernelSU on boot, launches the daemon detached.
 - `bypasscap.sh` - the daemon (self-backgrounds).
 - `action.sh` - action button: toggles full-charge override AND prints
   instant status (battery, state, cap mode, daemon PID, recent log).
