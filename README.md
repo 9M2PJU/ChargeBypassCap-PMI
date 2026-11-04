@@ -231,6 +231,36 @@ in override, never in a bootloop), clean uninstall.
   no alarms, writes nothing while unplugged.
 - Bottom line: below anything the battery stats can attribute.
 
+## Audit report (2026-11-04, v1.7 code on POCO X3 Pro)
+
+Full re-audit after the v1.6 reboot-fix port, all paths exercised live.
+Verdict: healthy on 5V charging, with one measured limitation (below).
+No code changes needed.
+
+- **Files:** all four scripts md5-identical to the release. Same
+  `644`-installed fix as onyx: `action.sh`, `service.sh`,
+  `uninstall.sh` chmodded to `755` on device (repo already ships
+  `755`, so future installs are fine).
+- **Daemon:** single instance (PID 3213), RSS 1820 KB (matches
+  October's 1776 KB). CPU below tick resolution, same class as onyx.
+- **Paths verified live:** adopt + hammer across a reboot with cable
+  in (71%, temp cap 65): 8+ min steady hold at ~2 mA, zero false
+  overrides. Resume on cap restore (75 <= 78 -> release, -1.6 A fill).
+  Action-button release (override latched, daemon hands-off) and
+  clear (cap armed, outputs accurate). Node driven 1 -> 0 -> 1
+  (manual hold pinned 7 mA).
+- **Fast chargers (measured limitation):** on a HVDCP/QC pump charger
+  the battery kept charging at -2.5 A (74% to 75%) with
+  `input_suspend` firmly at 1. The node gates the 5V path only, so the
+  module caps standard 5V charging but cannot hold pump fast charging.
+  Re-verified on 5V DCP right after: hold at 3 mA. Use a 5V source
+  when the cap matters. Related: a very weak source (100 mA
+  negotiated) never reaches the -500000 engage threshold, so the
+  daemon correctly stays silent in deadband — file that under
+  charger, not module.
+- **Manager on this phone:** KowSU (F7 uses KernelSU-Next). WebUI and
+  action button behave the same through `ksu.exec`.
+
 ## Files
 
 - `service.sh` - started by KernelSU on boot, launches the daemon detached.
