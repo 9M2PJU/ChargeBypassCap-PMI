@@ -13,6 +13,8 @@
 
 Userspace adjustable charge cap for POCO X3 Pro (vayu). No kernel source needed, no app needed — set the cap in the module WebUI (Open button).
 
+> **Two variants exist — pick yours:** this repo is for **POCO X3 Pro (vayu)** on RE404 (drives `input_suspend`). For **POCO F7 (onyx)** on Sakata(X) kernels (drives `smart_night`), use [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap). Same daemon logic, different node.
+
 ## Tested on
 
 - **Device:** POCO X3 Pro (M2102J20SG, codename vayu)
