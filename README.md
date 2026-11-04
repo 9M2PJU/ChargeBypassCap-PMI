@@ -10,8 +10,6 @@
 [![Platform](https://img.shields.io/badge/platform-Android-lightgrey?style=flat-square)](https://github.com/9M2PJU/ChargeBypassCap-PMI)
 [![node](https://img.shields.io/badge/node-input_suspend-blue?style=flat-square)](#how-it-works)
 
-[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://buymeacoffee.com/9m2pju)
-
 Userspace adjustable charge cap via the standard suspend node. No kernel source needed, no app needed - set the cap in the module WebUI (Open button).
 
 > **Two variants exist - pick the one your kernel supports:** this repo drives the standard power_supply `input_suspend`. If your kernel exposes Xiaomi's `smart_night` charger node instead, use [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap). Same daemon logic, different node. See Requirements for the 10-second check.
@@ -24,6 +22,7 @@ Userspace adjustable charge cap via the standard suspend node. No kernel source 
   - [Reboots (fixed in v1.6)](#reboots-fixed-in-v16)
   - [ROM Battery protection modes](#rom-battery-protection-modes)
   - [MIUI toggles in detail](#miui-toggles-in-detail-verified-on-this-phone)
+  - [Watchdog](#watchdog)
 - [Safety](#safety)
 - [Live status](#live-status)
 - [Installation](#installation)
@@ -339,6 +338,13 @@ No code changes needed.
 
 Bypass verified on the RE404 kernel (deutereum). Sibling project:
 [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap).
+
+## Support
+
+If this module holds your battery where you set it, consider buying me a
+coffee - it funds test devices and the kernel experiments behind it.
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://buymeacoffee.com/9m2pju)
 
 ## License
 
