@@ -8,12 +8,33 @@
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square)](LICENSE)
 [![KernelSU](https://img.shields.io/badge/KernelSU-module-green?style=flat-square)](https://kernelsu.org)
 [![Platform](https://img.shields.io/badge/platform-Android-lightgrey?style=flat-square)](https://github.com/9M2PJU/ChargeBypassCap-PMI)
+[![node](https://img.shields.io/badge/node-input_suspend-blue?style=flat-square)](#how-it-works)
 
 [![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://buymeacoffee.com/9m2pju)
 
 Userspace adjustable charge cap for POCO X3 Pro (vayu). No kernel source needed, no app needed - set the cap in the module WebUI (Open button).
 
 > **Two variants exist - pick yours:** this repo is for **POCO X3 Pro (vayu)** on RE404 (drives `input_suspend`). For **POCO F7 (onyx)** on Sakata(X) kernels (drives `smart_night`), use [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap). Same daemon logic, different node.
+
+## Contents
+
+- [Tested on](#tested-on)
+- [Why](#why)
+- [How it works](#how-it-works)
+  - [Reboots (fixed in v1.6)](#reboots-fixed-in-v16)
+  - [ROM Battery protection modes](#rom-battery-protection-modes)
+  - [MIUI toggles in detail](#miui-toggles-in-detail-verified-on-this-phone)
+- [Safety](#safety)
+- [Live status](#live-status)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Requirements](#requirements)
+- [Audit report (2026-10-29)](#audit-report-2026-10-29-v131-on-poco-x3-pro)
+- [Audit report (2026-11-04)](#audit-report-2026-11-04-v17-code-on-poco-x3-pro)
+- [Files](#files)
+- [Logging](#logging)
+- [Credits](#credits)
+- [License](#license)
 
 ## Tested on
 
@@ -24,6 +45,10 @@ Userspace adjustable charge cap for POCO X3 Pro (vayu). No kernel source needed,
 - **Kernel:** RE404 vR3 by deutereum (`4.19.404R`, Neutron Clang 24,
   EEVDF/BPF backports, KowSU) - its advertised Bypass Charging was verified
   by direct sysfs test on this exact setup
+- **Manager:** KowSU
+- **Control node:** `/sys/class/power_supply/battery/input_suspend`
+- **ROM setting:** both MIUI toggles off (Battery protection, Smart charging)
+- **Cap:** 80% (adjustable 50-100%)
 
 ## Why
 
@@ -175,6 +200,9 @@ battery state, daemon PID, and recent log.
 
 ## Audit report (2026-10-29, v1.3.1 on POCO X3 Pro)
 
+<details>
+<summary>Historical audit - all checks passed, one bug fixed (click to expand)</summary>
+
 Method: live checks on the author's phone (POCO X3 Pro, RE404 kernel,
 module installed from the v1.3.1 release ZIP) plus a full read of all four
 scripts. First pass ran at 03:19 local, full re-verification at 04:20
@@ -232,6 +260,8 @@ in override, never in a bootloop), clean uninstall.
 - Sleep state: `sleep 60` between polls. Holds no wakelocks, registers
   no alarms, writes nothing while unplugged.
 - Bottom line: below anything the battery stats can attribute.
+
+</details>
 
 ## Audit report (2026-11-04, v1.7 code on POCO X3 Pro)
 
