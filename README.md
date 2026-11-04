@@ -58,25 +58,25 @@ polls the battery every 60 seconds while the cable is plugged in
 
 The 2% gap between engage and release stops the switch from flapping.
 
-### Reboots (fixed in v1.6, ported from ChargeBypassCap v1.10)
+### Reboots (fixed in v1.6)
 
-2026-11-04, POCO F7: kernel-flash reboots overnight exposed an adopt bug
-that applies equally here (same daemon logic, different node). A reboot
-resets `input_suspend` to 0, but the daemon trusted the stale hold and
-never re-wrote it. One poll later the resumed charge current looked like
-a manual release, latched override, and the battery charged to 100%.
-The fix, ported verbatim: hammer the write until it reads back stuck
-(5-minute grace, because the daemon starts before the charger stack is
-up), and re-assert any node clear within 10 minutes of start instead of
-yielding. Fixed and verified across three reboot cycles on onyx; the
-vayu reboot test is still pending.
+The daemon used to trust a stale hold across reboots: a reboot resets
+`input_suspend` to 0, and the resumed charge current then looked like a
+manual release, latching override and charging past the cap (caught on
+the sister onyx build: reboot at 02:00 with cable in, 81% to 100% by
+02:35 — same daemon logic). The fix: hammer the write until it reads
+back stuck (5-minute grace, because the daemon starts before the
+charger stack is up), and re-assert any node clear within 10 minutes of
+start instead of yielding. Verified on this phone: reboot with cable in
+at 71% adopted the hold, 8+ minutes steady at ~2 mA, zero false
+overrides.
 
 ### ROM Battery protection modes
 
 | ROM mode | With this module |
 | --- | --- |
 | Charge fully | Use this. The module is the sole decider. |
-| Stock limiter (any cap/hold mode) | Do not trust it. On vayu the stock protection blew past 80% to 84% at full current; on onyx the 80% limit freezes all charging at any level. Either failure defeats the module. |
+| Stock limiter (any cap/hold mode) | Do not trust it. On this phone stock protection blew past 80% to 84% at full current. A limiter that cannot hold its own cap cannot cooperate with the module. |
 | Intelligent / smart top-up | Not recommended. A top-up resume while the module holds reads as a manual release and latches override till unplug (only re-asserted within 10 min of boot). |
 
 None of these matter while the phone is powered off. Offline charging
