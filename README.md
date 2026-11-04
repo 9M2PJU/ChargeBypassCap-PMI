@@ -187,12 +187,27 @@ battery state, daemon PID, and recent log.
 
 ## Requirements
 
+**The short version:** this module works on any ROM and any kernel, as
+long as three things hold: root with boot scripts, a KernelSU-family
+manager, and a kernel that honors `input_suspend`. ROM brand, Android
+version, and kernel name do not matter.
+
 - Root with boot-script support (KowSU tested; Magisk/APatch should work
   since `service.sh` is a plain boot script).
-- A kernel that honors `input_suspend` (RE404 verified by direct write test;
-  stock PMI stack usually works too). Without it, the daemon writes into the
-  void: it then sees current still flowing after its own write and latches
-  override (fails safe, but the cap will not work).
+- A kernel that honors `/sys/class/power_supply/battery/input_suspend`
+  (RE404 verified; most Snapdragon PMI kernels expose it). Check yours in
+  two commands (root shell, plugged in below your cap):
+  `ls /sys/class/power_supply/battery/input_suspend`
+  then `echo 1 > /sys/class/power_supply/battery/input_suspend` and watch
+  the battery current fall to ~0 mA (`... && echo 0 > ...` to release).
+  Without a working node the daemon writes into the void: it then sees
+  current still flowing after its own write and latches override (fails
+  safe, but the cap will not work). Measured limit: the node gates 5V
+  charging only - pump fast charging flows straight through it.
+- For best results, turn the ROM's own limiters off (MIUI: both Battery
+  protection and Smart charging off; HyperOS: Charge fully - see ROM
+  Battery protection modes). Two drivers voting on one charger can only
+  confuse each other; the module is verified as the sole decider.
 - The N0Kontzzz Kernel Manager app is OPTIONAL: it writes the same node, so
   its bypass toggle remains usable as a manual backup (last writer wins; the
   daemon leaves manually-suspended states alone, so the two do not fight).
