@@ -12,9 +12,9 @@
 
 [![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://buymeacoffee.com/9m2pju)
 
-Userspace adjustable charge cap for POCO X3 Pro (vayu). No kernel source needed, no app needed - set the cap in the module WebUI (Open button).
+Userspace adjustable charge cap via the standard suspend node. No kernel source needed, no app needed - set the cap in the module WebUI (Open button).
 
-> **Two variants exist - pick yours:** this repo is for **POCO X3 Pro (vayu)** on RE404 (drives `input_suspend`). For **POCO F7 (onyx)** on Sakata(X) kernels (drives `smart_night`), use [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap). Same daemon logic, different node.
+> **Two variants exist - pick the one your kernel supports:** this repo drives the standard power_supply `input_suspend`. If your kernel exposes Xiaomi's `smart_night` charger node instead, use [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap). Same daemon logic, different node. See Requirements for the 10-second check.
 
 ## Contents
 
@@ -49,6 +49,7 @@ Userspace adjustable charge cap for POCO X3 Pro (vayu). No kernel source needed,
 - **Control node:** `/sys/class/power_supply/battery/input_suspend`
 - **ROM setting:** both MIUI toggles off (Battery protection, Smart charging)
 - **Cap:** 80% (adjustable 50-100%)
+- Anything meeting Requirements works - the above is just the author's setup.
 
 ## Why
 
@@ -325,7 +326,7 @@ No code changes needed.
 
 ## Credits
 
-Bypass verified on the RE404 kernel (deutereum). Sibling project for POCO F7:
+Bypass verified on the RE404 kernel (deutereum). Sibling project:
 [ChargeBypassCap](https://github.com/9M2PJU/ChargeBypassCap).
 
 ## License
