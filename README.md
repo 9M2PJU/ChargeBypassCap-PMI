@@ -82,6 +82,22 @@ goes to 100% no matter what, so unplug before a scheduled shutdown if
 you want to wake at the cap. Recommended setup: ROM on Charge fully,
 module cap at 80%, cable out overnight.
 
+### MIUI toggles in detail (verified on this phone)
+
+MIUI 14 exposes two separate toggles. Both were found enabled (`true`)
+in the `com.miui.securitycenter` prefs:
+
+| Toggle | Behavior | With this module |
+| --- | --- | --- |
+| Battery protection (`cb_always_charge_protect`) | MIUI's own ~80% cap, documented leaky: blew past 80% to 84% at full current on this phone | Redundant at best. The module holds 80% first so stock stays idle — but it leaves a second unobservable voter on the same charger. Turn off. |
+| Smart charging (`cb_intellect_charge_protect`) | Night top-up learner: holds ~80%, resumes to 100% before wake | Defeats the cap. Its top-up resume reads to the module as a manual release, latching override till unplug (only re-asserted within 10 min of boot), so the phone finishes to 100%. Turn off. |
+
+Overnight telltale if you keep smart charging on anyway: check the
+module description in the KernelSU manager before unplugging in the
+morning. `🔓 override` means the top-up disarmed the module overnight;
+`⛔ holding` means the cap survived. The daemon log timestamps exactly
+when it happened.
+
 ## Live status
 
 The module description in the KernelSU manager always shows the live state,
