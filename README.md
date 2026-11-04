@@ -79,7 +79,7 @@ polls the battery every 60 seconds while the cable is plugged in
 | Sinks to CAP-2 while suspended | Holding | Write `0`: charging resumes |
 | Deadband between, or 100% trickle | Either | Left alone (deadband) |
 | Fresh plug-in below CAP, stuck suspended | Suspended | Write `0`: plug in means intent to charge |
-| Holding, but current flows past grace period | Holding | You released it manually: latch override till unplug (but see Reboots: external clears within 10 min of start are re-asserted) |
+| Holding, but current flows past grace period | Holding | Nobody asked for release (no OVERRIDE file): re-assert, up to 10 in a row, then yield + override (broken node) |
 | Reboot with cable in above CAP | Booting | Hammer node to `1` till it sticks, 5-min grace; re-assert if cleared within 10 min of start (v1.6) |
 | Unplugged | Any | Clear session state; next plug starts capped again |
 
@@ -96,7 +96,9 @@ back stuck (5-minute grace, because the daemon starts before the
 charger stack is up), and re-assert any node clear within 10 minutes of
 start instead of yielding. Verified on this phone: reboot with cable in
 at 71% adopted the hold, 8+ minutes steady at ~2 mA, zero false
-overrides.
+overrides. Since v1.9 the re-assert is unconditional (no more 10-minute
+window): any external clear is re-asserted, and only 10 consecutive
+failures yield to a node that will not hold.
 
 ### ROM Battery protection modes
 
@@ -104,7 +106,7 @@ overrides.
 | --- | --- |
 | Both MIUI toggles off | Use this. The module is the sole decider. |
 | Stock limiter (any cap/hold mode) | Do not trust it. On this phone stock protection blew past 80% to 84% at full current. A limiter that cannot hold its own cap cannot cooperate with the module. |
-| Intelligent / smart top-up | Not recommended. A top-up resume while the module holds reads as a manual release and latches override till unplug (only re-asserted within 10 min of boot). |
+| Intelligent / smart top-up | Not recommended. A top-up resume while the module holds is treated as hostile and re-asserted (up to 10 consecutive polls) before the daemon yields - so it still finishes to 100%, minutes later, with the fight in the log. |
 
 None of these matter while the phone is powered off. Offline charging
 goes to 100% no matter what, so unplug before a scheduled shutdown if
@@ -119,13 +121,21 @@ in the `com.miui.securitycenter` prefs:
 | Toggle | Behavior | With this module |
 | --- | --- | --- |
 | Battery protection (`cb_always_charge_protect`) | MIUI's own ~80% cap, documented leaky: blew past 80% to 84% at full current on this phone | Redundant at best. The module holds 80% first so stock stays idle - but it leaves a second unobservable voter on the same charger. Turn off. |
-| Smart charging (`cb_intellect_charge_protect`) | Night top-up learner: holds ~80%, resumes to 100% before wake | Defeats the cap. Its top-up resume reads to the module as a manual release, latching override till unplug (only re-asserted within 10 min of boot), so the phone finishes to 100%. Turn off. |
+| Smart charging (`cb_intellect_charge_protect`) | Night top-up learner: holds ~80%, resumes to 100% before wake | Defeats the cap. Its top-up resume is treated as hostile and re-asserted (up to 10 consecutive polls) before the daemon yields, so the phone still finishes to 100%. Turn off. |
 
 Overnight telltale if you keep smart charging on anyway: check the
 module description in the KowSU manager before unplugging in the
 morning. `🔓 override` means the top-up disarmed the module overnight;
 `⛔ holding` means the cap survived. The daemon log timestamps exactly
 when it happened.
+
+### Watchdog
+
+The daemon beats a `heartbeat` file every poll, plugged or not. A
+supervisor loop in `service.sh` checks it every 180s and restarts a
+stale daemon (TERM, then KILL after 5s), up to 5 times before giving up
+till next boot - every step logged. A dead daemon can no longer silently
+disarm the cap; the worst case is a logged restart.
 
 ## Safety
 
@@ -209,9 +219,10 @@ version, and kernel name do not matter.
   protection and Smart charging off; HyperOS: Charge fully - see ROM
   Battery protection modes). Two drivers voting on one charger can only
   confuse each other; the module is verified as the sole decider.
-- The N0Kontzzz Kernel Manager app is OPTIONAL: it writes the same node, so
-  its bypass toggle remains usable as a manual backup (last writer wins; the
-  daemon leaves manually-suspended states alone, so the two do not fight).
+- The N0Kontzzz Kernel Manager app is NOT a manual override: the daemon owns
+  the node and reverts external writes within 1-2 polls. Release bypass
+  only via the action button (it signals through OVERRIDE, which is always
+  honored).
 - Wired charging only (the wireless path is untested).
 
 ## Audit report (2026-10-29, v1.3.1 on POCO X3 Pro)
@@ -311,7 +322,7 @@ No code changes needed.
 
 ## Files
 
-- `service.sh` - started by KowSU/KernelSU on boot, launches the daemon detached.
+- `service.sh` - started by KowSU/KernelSU on boot; launches the daemon detached plus a watchdog that restarts it if its heartbeat goes stale.
 - `bypasscap.sh` - the daemon (self-backgrounds).
 - `action.sh` - action button: toggles full-charge override AND prints
   instant status (battery, state, cap mode, daemon PID, recent log).
@@ -321,7 +332,7 @@ No code changes needed.
 
 ## Logging
 
-- State dir: `/data/adb/chargebypasscap-pmi/` (holding, override, last_status, cap.log)
+- State dir: `/data/adb/chargebypasscap-pmi/` (holding, override, last_status, heartbeat, cap.log)
 - Log: `/data/adb/chargebypasscap-pmi/cap.log` - check what it did overnight.
 
 ## Credits

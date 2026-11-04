@@ -3,8 +3,10 @@
 # Direct sysfs control via the standard PMI node:
 #   /sys/class/power_supply/battery/input_suspend (1 = suspend, 0 = resume)
 # Verified on RE404 kernel: 1 pins battery at ~0 mA, 0 resumes full charging.
-# No app needed; N0Kontzzz Kernel Manager writes the same node, so its
-# bypass toggle remains usable as a manual backup (last writer wins).
+# The daemon owns this node exclusively. The action button is the only
+# supported manual control (it signals via the OVERRIDE file, which the
+# daemon always honors). Anything else writing the node gets reverted
+# within 1-2 polls.
 # Behavior (always on while cable is plugged, cap adjustable in WebUI):
 #   - Battery reaches CAP while charging -> writes 1. Phone runs off the
 #     cable, battery rests at ~CAP.
@@ -14,6 +16,7 @@
 #   - You want 100% (travel day)? When it holds at CAP, use the action
 #     button to release bypass once. The daemon backs off until you unplug.
 #     Next plug session the cap is active again automatically.
+#     (External node writes are NOT a release path: they get re-asserted.)
 #   - Plug in = intent to charge: on every fresh plug-in below CAP the
 #     daemon makes sure bypass is OFF.
 #   - Cap is set in the WebUI (Open button, slider 50-100%, default 80)
@@ -30,7 +33,7 @@
 MODDIR=/data/adb/chargebypasscap-pmi
 LOG=$MODDIR/cap.log
 HOLDING=$MODDIR/holding
-START=$(date +%s 2>/dev/null)
+BEAT=$MODDIR/heartbeat
 OVERRIDE=$MODDIR/override
 NODE=/sys/class/power_supply/battery/input_suspend
 CAP=/sys/class/power_supply/battery/capacity
@@ -91,9 +94,8 @@ if [ "$prev_usb" = "1" ] && [ -n "$cap0" ] && [ "$cap0" -ge "$HIGH" ] && [ -n "$
   touch $HOLDING
   # Re-assert the hold: a reboot resets input_suspend to 0, and this code
   # runs before the charger stack is up, so hammer the write until it reads
-  # back stuck. Without this the resumed charge current looks like a manual
-  # release and latches override (seen 2026-11-04 on onyx: reboot at 02:00
-  # with cable in -> 100% by 02:35).
+  # back stuck (2026-11-04: late charger init cleared the node minutes
+  # after a one-shot rewrite during testing).
   for i in 1 2 3 4 5 6; do
     echo 1 > $NODE 2>/dev/null
     sleep 10
@@ -107,6 +109,8 @@ else
   grace=0
 fi
 
+reassert_count=0
+
 loop() {
   while true; do
     HIGH=$(read_high); LOW=$((HIGH - 2))
@@ -114,6 +118,7 @@ loop() {
     usb=$(cat $USBON 2>/dev/null)
     cap=$(cat $CAP 2>/dev/null)
     cur=$(cat $CUR 2>/dev/null)
+    resisted=0
 
     # Fresh plug-in: intent to charge. Clear session state; reconcile below cap.
     if [ "$usb" = "1" ] && [ "$prev_usb" != "1" ]; then
@@ -143,19 +148,23 @@ loop() {
           sleep 30
         else
           # Holding but current flowing past grace with no override file.
-          # The action button always sets OVERRIDE first, so this is an
-          # external node change. Within 10 min of start it is boot-time
-          # charger settling -> re-assert instead of yielding (2026-11-04:
-          # late charger init cleared the node minutes after adopt on onyx).
-          now=$(date +%s 2>/dev/null)
-          if [ -n "$START" ] && [ -n "$now" ] && [ $((now - START)) -lt 600 ]; then
-            log "node cleared after start -> re-asserting hold"
-            echo 1 > $NODE 2>/dev/null
-            grace=$GRACE_POLLS
-          else
-            log "manual bypass-OFF detected -> override till unplug"
+          # Nobody asked for a release (the action button always sets
+          # OVERRIDE first), so every external clear is treated as hostile
+          # and re-asserted - reboot clears, charger renegotiation, ROM
+          # top-ups, stray app writes, all of them. Only a node that
+          # resists 10 consecutive re-asserts is declared broken, and then
+          # we yield so a dead switch fails safe instead of chattering.
+          reassert_count=$((reassert_count + 1))
+          resisted=1
+          if [ "$reassert_count" -ge 10 ]; then
+            log "node ineffective after 10 re-asserts -> override till unplug"
             touch $OVERRIDE
             rm -f $HOLDING
+            reassert_count=0
+          else
+            log "external node clear -> re-asserting hold ($reassert_count/10)"
+            echo 1 > $NODE 2>/dev/null
+            grace=$GRACE_POLLS
           fi
         fi
       elif [ "$cap" -le "$LOW" ] && ! is_charging "$cur"; then
@@ -181,13 +190,23 @@ loop() {
     elif [ -f $OVERRIDE ]; then
       ST="🔓 override till unplug (${cap:-?}%)"
     elif [ -f $HOLDING ]; then
-      ST="⛔ bypass ON, holding ${cap:-?}%"
+      if [ -n "$cur" ] && is_charging "$cur"; then
+        ST="⛔ re-asserting hold ${cap:-?}%"
+      else
+        ST="⛔ bypass ON, holding ${cap:-?}%"
+      fi
     elif [ -n "$cur" ] && is_charging "$cur"; then
       ST="🔋 charging ${cap:-?}%"
     else
       ST="⏸ idle ${cap:-?}%"
     fi
     update_desc "$ST" "$BASE_DESC"
+
+    # Heartbeat for the service.sh watchdog. Unconditional: a live daemon
+    # beats every poll, plugged or not. Non-resisted polls reset the
+    # consecutive re-assert counter (only sustained resistance yields).
+    date +%s 2>/dev/null > $BEAT
+    [ "$resisted" = "0" ] && reassert_count=0
 
     sleep $POLL
   done
