@@ -22,6 +22,7 @@ Userspace adjustable charge cap via the standard suspend node. No kernel source 
   - [Reboots (fixed in v1.6)](#reboots-fixed-in-v16)
   - [ROM Battery protection modes](#rom-battery-protection-modes)
   - [MIUI toggles in detail](#miui-toggles-in-detail-verified-on-this-phone)
+  - [Chargers](#chargers-5v-holds-pump-fast-charging-leaks-field-evidence-2026-11-05)
   - [Watchdog](#watchdog)
 - [Safety](#safety)
 - [Live status](#live-status)
@@ -127,6 +128,24 @@ module description in the KowSU manager before unplugging in the
 morning. `🔓 override` means the top-up disarmed the module overnight;
 `⛔ holding` means the cap survived. The daemon log timestamps exactly
 when it happened.
+
+### Chargers: 5V holds, pump fast charging leaks (field evidence 2026-11-05)
+
+The node gates the 5V path only (see the 11-04 audit). Full-session
+proof: on 2026-11-05 the phone charged from 12% on a QC brick
+(`real_type = USB_HVDCP_3`), the daemon engaged correctly at the 80%
+cap (`16:34 cap=80 charging -> bypass ON`), but pump current kept
+flowing straight through `input_suspend=1` past three re-asserts
+(16:38/16:41/16:44) and the battery climbed to 91% before the hold
+caught it. Rule of thumb: overnight or capped charging belongs on a
+plain 5V source; save the fast brick for travel days (action-button
+override).
+
+Diagnostic tip for reading the log: action-button taps leave no daemon
+log lines, only the daemon's own polls log. So a fresh
+`cap=NN charging -> bypass ON` well above your cap means the hold was
+released mid-session (override tap or manual state change) and
+re-engaged - not that the engage logic misfired.
 
 ### Watchdog
 
